@@ -1,0 +1,4 @@
+bin/
+core
+ctrl_aux.o
+gen_aux.o

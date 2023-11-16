@@ -1,5 +1,5 @@
 /*
-    waveletcdf97_3d.c : This file is part of WaveRange CFD data compression utility
+    waveletcdf97_3d.cpp : This file is part of WaveRange CFD data compression utility
 
     Copyright (C) 2017  Dmitry Kolomenskiy
     Copyright (C) 2017  Ryo Onishi
@@ -35,24 +35,25 @@
 #include "waveletcdf97_3d.h"
 
 /* Three-dimensional wavelet transform using CDF9/7 wavelets */
-void waveletcdf97_3d(int N1in, int N2in, int N3in, int lvlin, double *X)
+template <typename T>
+void waveletcdf97_3d(int N1in, int N2in, int N3in, int lvlin, T *X)
 {
   // Lifting filter coefficients
-  static const double lfc[4] = {-1.5861343420693648, -0.0529801185718856, 0.8829110755411875, 0.4435068520511142};
+  static const T lfc[4] = {-1.5861343420693648, -0.0529801185718856, 0.8829110755411875, 0.4435068520511142};
 
   // Scale factor
-  static const double scl = 1.1496043988602418;
-  static const double pscl = 1.0/1.1496043988602418;
+  static const T scl = 1.1496043988602418;
+  static const T pscl = 1.0/1.1496043988602418;
 
   // Indexes
   int k;
   unsigned long int i1, i2, i3, i, M1, M2, M3, M, N, Q;
 
   // Temporary vectors
-  double *V, *V0, *V1;
+  T *V, *V0, *V1;
 
   // Extrapolation coefficients for odd-sized arrays
-  double ext[3];
+  T ext[3];
   ext[0] = -2*lfc[0]*lfc[1]*lfc[2]/(1+2*lfc[1]*lfc[2]);
   ext[1] = -2*lfc[1]*lfc[2]/(1+2*lfc[1]*lfc[2]);
   ext[2] = -2*(lfc[0]+lfc[2]+3*lfc[0]*lfc[1]*lfc[2])/(1+2*lfc[1]*lfc[2]);
@@ -86,9 +87,9 @@ void waveletcdf97_3d(int N1in, int N2in, int N3in, int lvlin, double *X)
               M = M1;
 
               // Allocate temporary vectors
-              V = malloc(N*sizeof(double));
-              V0 = malloc(M*sizeof(double));
-              V1 = malloc(M*sizeof(double));
+              V = (T*) malloc(N*sizeof(T));
+              V0 = (T*) malloc(M*sizeof(T));
+              V1 = (T*) malloc(M*sizeof(T));
 
               // Loop over the remaining two directions
               for (i3 = 0; i3 < N3; i3++)
@@ -150,9 +151,9 @@ void waveletcdf97_3d(int N1in, int N2in, int N3in, int lvlin, double *X)
               M = M2;
 
               // Allocate temporary vectors
-              V = malloc(N*sizeof(double));
-              V0 = malloc(M*sizeof(double));
-              V1 = malloc(M*sizeof(double));
+              V = (T*) malloc(N*sizeof(T));
+              V0 = (T*) malloc(M*sizeof(T));
+              V1 = (T*) malloc(M*sizeof(T));
 
               // Loop over the remaining two directions
               for (i3 = 0; i3 < N3; i3++)
@@ -214,9 +215,9 @@ void waveletcdf97_3d(int N1in, int N2in, int N3in, int lvlin, double *X)
               M = M3;
 
               // Allocate temporary vectors
-              V = malloc(N*sizeof(double));
-              V0 = malloc(M*sizeof(double));
-              V1 = malloc(M*sizeof(double));
+              V = (T*) malloc(N*sizeof(T));
+              V0 = (T*) malloc(M*sizeof(T));
+              V1 = (T*) malloc(M*sizeof(T));
 
               // Loop over the remaining two directions
               for (i2 = 0; i2 < N2; i2++)
@@ -296,9 +297,9 @@ void waveletcdf97_3d(int N1in, int N2in, int N3in, int lvlin, double *X)
               Q = (M/2UL) + ( (M%2UL) > 0UL ? 1UL : 0UL );
 
               // Allocate temporary vectors
-              V = malloc(M*sizeof(double));
-              V0 = malloc(Q*sizeof(double));
-              V1 = malloc(Q*sizeof(double));
+              V = (T*) malloc(M*sizeof(T));
+              V0 = (T*) malloc(Q*sizeof(T));
+              V1 = (T*) malloc(Q*sizeof(T));
 
               // Loop over the remaining two directions
               for (i2 = 0; i2 < M2; i2++)
@@ -355,9 +356,9 @@ void waveletcdf97_3d(int N1in, int N2in, int N3in, int lvlin, double *X)
               Q = (M/2UL) + ( (M%2UL) > 0UL ? 1UL : 0UL );
 
               // Allocate temporary vectors
-              V = malloc(M*sizeof(double));
-              V0 = malloc(Q*sizeof(double));
-              V1 = malloc(Q*sizeof(double));
+              V = (T*) malloc(M*sizeof(T));
+              V0 = (T*) malloc(Q*sizeof(T));
+              V1 = (T*) malloc(Q*sizeof(T));
 
               // Loop over the remaining two directions
               for (i3 = 0; i3 < M3; i3++)
@@ -414,9 +415,9 @@ void waveletcdf97_3d(int N1in, int N2in, int N3in, int lvlin, double *X)
               Q = (M/2UL) + ( (M%2UL) > 0UL ? 1UL : 0UL );
 
               // Allocate temporary vectors
-              V = malloc(M*sizeof(double));
-              V0 = malloc(Q*sizeof(double));
-              V1 = malloc(Q*sizeof(double));
+              V = (T*) malloc(M*sizeof(T));
+              V0 = (T*) malloc(Q*sizeof(T));
+              V1 = (T*) malloc(Q*sizeof(T));
 
               // Loop over the remaining two directions
               for (i3 = 0; i3 < M3; i3++)
@@ -552,3 +553,5 @@ void ind_p2w_3d( int lvlin, int N1in, int N2in, int N3in, int i1in, int i2in, in
     }
 }
 
+template void waveletcdf97_3d<float>(int N1in, int N2in, int N3in, int lvlin, float *X);
+template void waveletcdf97_3d<double>(int N1in, int N2in, int N3in, int lvlin, double *X);

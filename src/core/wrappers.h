@@ -29,6 +29,12 @@
     observational “Big Data”).
 */
 
+extern "C" void encoding_wrap_float(int nx, int ny, int nz, float *fld_1d, int wtflag, int mx, int my, int mz, float *cutoffvec, float& tolabs, float& midval, float& halfspanval, unsigned char& wlev, unsigned char& nlay, unsigned long int& ntot_enc, float *deps_vec, float *minval_vec, unsigned long int *len_enc_vec, unsigned char *data_enc);
+extern "C" void encoding_wrap_double(int nx, int ny, int nz, double *fld_1d, int wtflag, int mx, int my, int mz, double *cutoffvec, double& tolabs, double& midval, double& halfspanval, unsigned char& wlev, unsigned char& nlay, unsigned long int& ntot_enc, double *deps_vec, double *minval_vec, unsigned long int *len_enc_vec, unsigned char *data_enc);
+
+extern "C" void decoding_wrap_float(int nx, int ny, int nz, float *fld_1d, float& tolabs, float& midval, float& halfspanval, unsigned char& wlev, unsigned char& nlay, unsigned long int& ntot_enc, float *deps_vec, float *minval_vec, unsigned long int *len_enc_vec, unsigned char *data_enc);
+extern "C" void decoding_wrap_double(int nx, int ny, int nz, double *fld_1d, double& tolabs, double& midval, double& halfspanval, unsigned char& wlev, unsigned char& nlay, unsigned long int& ntot_enc, double *deps_vec, double *minval_vec, unsigned long int *len_enc_vec, unsigned char *data_enc);
+
 /* C/C++ interface */
 /* Encoding subroutine with wavelet transform and range coding 
     nx : (INPUT) number of elements of the input 3D field in the first (fastest) direction
@@ -50,7 +56,8 @@
     minval_vec : (OUTPUT) bit plane offset vector, double minval_vec[nlaymax];
     len_enc_vec : (OUTPUT) number of elements in the encoded bit planes, unsigned long int len_enc_vec[nlaymax];
     data_enc : (OUTPUT) range-encoded output data array, defined as, e.g., unsigned char *data_enc = new unsigned char[ntot_enc_max]; where ntot_enc_max is an output of setup_wr */ 
-extern "C" void encoding_wrap(int nx, int ny, int nz, double *fld_1d, int wtflag, int mx, int my, int mz, double *cutoffvec, double& tolabs, double& midval, double& halfspanval, unsigned char& wlev, unsigned char& nlay, unsigned long int& ntot_enc, double *deps_vec, double *minval_vec, unsigned long int *len_enc_vec, unsigned char *data_enc);
+template <typename T>
+void encoding_wrap(int nx, int ny, int nz, T *fld_1d, int wtflag, int mx, int my, int mz, T *cutoffvec, T& tolabs, T& midval, T& halfspanval, unsigned char& wlev, unsigned char& nlay, unsigned long int& ntot_enc, T *deps_vec, T *minval_vec, unsigned long int *len_enc_vec, unsigned char *data_enc);
 
 /* Decoding subroutine with range decoding and inverse wavelet transform 
     nx : (INPUT) number of elements of the input 3D field in the first (fastest) direction
@@ -66,8 +73,9 @@ extern "C" void encoding_wrap(int nx, int ny, int nz, double *fld_1d, int wtflag
     deps_vec : (INPUT) quantization step size vector, double deps_vec[nlay];
     minval_vec : (INPUT) bit plane offset vector, double minval_vec[nlay];
     len_enc_vec : (INPUT) number of elements in the encoded bit planes, unsigned long int len_enc_vec[nlay];
-    data_enc : (INPUT) range-encoded data array, defined as, e.g., unsigned char *data_enc = new unsigned char[ntot_enc]; */ 
-extern "C" void decoding_wrap(int nx, int ny, int nz, double *fld_1d, double& tolabs, double& midval, double& halfspanval, unsigned char& wlev, unsigned char& nlay, unsigned long int& ntot_enc, double *deps_vec, double *minval_vec, unsigned long int *len_enc_vec, unsigned char *data_enc);
+    data_enc : (INPUT) range-encoded data array, defined as, e.g., unsigned char *data_enc = new unsigned char[ntot_enc]; */
+template <typename T>
+void decoding_wrap(int nx, int ny, int nz, T *fld_1d, T& tolabs, T& midval, T& halfspanval, unsigned char& wlev, unsigned char& nlay, unsigned long int& ntot_enc, T *deps_vec, T *minval_vec, unsigned long int *len_enc_vec, unsigned char *data_enc);
 
 /* Return the number of bit planes and the required encoded data array size, as needed for memory allocation
     nlaymax : maximum allowed number of bit planes

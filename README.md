@@ -353,11 +353,11 @@ V. BRIEF DESCRIPTION OF THE FILES
 * src/mssg/mssg_enc.cpp : main MSSG encoder program
 * src/rangecod/Makefile : range coder make file
 * src/rangecod/port.h : range coder constant parameters
-* src/rangecod/rangecod.c : range coder subroutines
-* src/rangecod/rangecod.h : header for rangecod.c
+* src/rangecod/rangecod.cpp : range coder subroutines
+* src/rangecod/rangecod.h : header for rangecod.cpp
 * src/waveletcdf97_3d/Makefile : wavelet transform make file
-* src/waveletcdf97_3d/waveletcdf97_3d.c : wavelet transform subroutines
-* src/waveletcdf97_3d/waveletcdf97_3d.h : header for waveletcdf97_3d.c
+* src/waveletcdf97_3d/waveletcdf97_3d.cpp : wavelet transform subroutines
+* src/waveletcdf97_3d/waveletcdf97_3d.h : header for waveletcdf97_3d.cpp
 * examples/generic/generic_enc_dec.sh : encode/decode sample bash script for generic Fortran/C/C++ files
 * examples/generic/create_in_field.f90 : Fortran program to generate a sample data file
 * examples/generic/Makefile : make file for create_in_field

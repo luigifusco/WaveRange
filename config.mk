@@ -1,7 +1,7 @@
 # Select C++ compiler
 #CXX = sxc++
-#CXX = g++
-CXX = mpicxx # H5public.h may need mpi.h
+CXX = g++
+#CXX = mpicxx # H5public.h may need mpi.h
 
 # Select C compiler
 #CC = sxcc
@@ -22,13 +22,13 @@ CDNLFLAG = -c
 # Production C++ flags
 #CXXFLAGS = -Xp -Kexceptions
 #CXXFLAGS = -Caopt -Xp -Kexceptions
-CXXFLAGS = -Wall -O2 -ftree-vectorize -D__STDC_LIMIT_MACROS -march=native
+CXXFLAGS = -Wall -O2 -g -ftree-vectorize -D__STDC_LIMIT_MACROS -march=native
 
 # C compiler flags
 #CFLAGS = -Xa
 #CFLAGS = -Caopt -Xa
-CFLAGS = -Wall -O2 -ftree-vectorize -fomit-frame-pointer -funroll-loops -march=native
+CFLAGS = -Wall -O2 -g -ftree-vectorize -fomit-frame-pointer -funroll-loops -march=native
 
 # HDF path (optional)
-HDF_INC = $(HDF_ROOT)/include/
-HDF_LIB = $(HDF_ROOT)/lib/
+HDF_INC = ""
+HDF_LIB = ""

@@ -1,9 +1,9 @@
 include ../../config.mk
 
 OBJECTC = rangecod.o 
-CSOURCES = rangecod.c
+CSOURCES = rangecod.cpp
 
-ifeq ($(CC),gcc)
+ifeq ($(CXX),g++)
   CPICFLAG = -fPIC
 else
   CPICFLAG = 
@@ -12,7 +12,7 @@ endif
 all: rangecoder
 
 rangecoder: 
-	$(CC) $(CSOURCES) $(CDNLFLAG) $(CPICFLAG) $(CFLAGS) 
+	$(CXX) $(CSOURCES) $(CDNLFLAG) $(CPICFLAG) $(CFLAGS) 
 .PHONY: clean
 clean:
 	$(RM) ./*.gc??

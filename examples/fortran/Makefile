@@ -1,4 +1,4 @@
-FC = f95
+FC = gfortran
 OUTPUTDIR = ./
 # LIBDIR is the path to the WaveRange library file libwaverange.a or libwaverange.so
 LIBDIR = ../../bin/lib/

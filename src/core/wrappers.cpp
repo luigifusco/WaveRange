@@ -39,11 +39,9 @@
 #include <exception>
 #include <memory>
 
-extern "C" {
 #include "../rangecod/port.h"
 #include "../rangecod/rangecod.h"
 #include "../waveletcdf97_3d/waveletcdf97_3d.h"
-}
 
 #include "../core/defs.h"
 #include "wrappers.h"
@@ -52,12 +50,13 @@ using namespace std;
 
 
 /* Calculate local precision */
-static double lcl_prec(int nx, int ny, int nz, int jx, int jy, int jz, int mx, int my, int mz, double *cutoffvec)
+template <typename T>
+static T lcl_prec(int nx, int ny, int nz, int jx, int jy, int jz, int mx, int my, int mz, T *cutoffvec)
 {
     // Cartesian coordinates of the local precision cutoff block
-    int kx = int(double(jx)/double(nx)*double(mx));
-    int ky = int(double(jy)/double(ny)*double(my));
-    int kz = int(double(jz)/double(nz)*double(mz));
+    int kx = int(T(jx)/T(nx)*T(mx));
+    int ky = int(T(jy)/T(ny)*T(my));
+    int kz = int(T(jz)/T(nz)*T(mz));
 
     // Evaluate the local precision
     return cutoffvec[kx+mx*ky+mx*my*kz];
@@ -223,13 +222,31 @@ static void range_decode(unsigned char *enc_q, unsigned long int len_out_q, unsi
     free(rc);
 }
 
+extern "C" void encoding_wrap_float(int nx, int ny, int nz, float *fld_1d, int wtflag, int mx, int my, int mz, float *cutoffvec, float& tolabs, float& midval, float& halfspanval, unsigned char& wlev, unsigned char& nlay, unsigned long int& ntot_enc, float *deps_vec, float *minval_vec, unsigned long int *len_enc_vec, unsigned char *data_enc)
+{
+    encoding_wrap<float>(nx, ny, nz, fld_1d, wtflag, mx, my, mz, cutoffvec, tolabs, midval, halfspanval, wlev, nlay, ntot_enc, deps_vec, minval_vec, len_enc_vec, data_enc);
+}
+
+extern "C" void encoding_wrap_double(int nx, int ny, int nz, double *fld_1d, int wtflag, int mx, int my, int mz, double *cutoffvec, double& tolabs, double& midval, double& halfspanval, unsigned char& wlev, unsigned char& nlay, unsigned long int& ntot_enc, double *deps_vec, double *minval_vec, unsigned long int *len_enc_vec, unsigned char *data_enc)
+{
+    encoding_wrap<double>(nx, ny, nz, fld_1d, wtflag, mx, my, mz, cutoffvec, tolabs, midval, halfspanval, wlev, nlay, ntot_enc, deps_vec, minval_vec, len_enc_vec, data_enc);
+}
+
+extern "C" void decoding_wrap_float(int nx, int ny, int nz, float *fld_1d, float& tolabs, float& midval, float& halfspanval, unsigned char& wlev, unsigned char& nlay, unsigned long int& ntot_enc, float *deps_vec, float *minval_vec, unsigned long int *len_enc_vec, unsigned char *data_enc)
+{
+    decoding_wrap<float>(nx, ny, nz, fld_1d, tolabs, midval, halfspanval, wlev, nlay, ntot_enc, deps_vec, minval_vec, len_enc_vec, data_enc);
+}
+extern "C" void decoding_wrap_double(int nx, int ny, int nz, double *fld_1d, double& tolabs, double& midval, double& halfspanval, unsigned char& wlev, unsigned char& nlay, unsigned long int& ntot_enc, double *deps_vec, double *minval_vec, unsigned long int *len_enc_vec, unsigned char *data_enc)
+{
+    decoding_wrap<double>(nx, ny, nz, fld_1d, tolabs, midval, halfspanval, wlev, nlay, ntot_enc, deps_vec, minval_vec, len_enc_vec, data_enc);
+}
+
 
 /* Encoding subroutine with wavelet transform and range coding */ 
-extern "C" void encoding_wrap(int nx, int ny, int nz, double *fld_1d, int wtflag, int mx, int my, int mz, double *cutoffvec, double& tolabs, double& midval, double& halfspanval, unsigned char& wlev, unsigned char& nlay, unsigned long int& ntot_enc, double *deps_vec, double *minval_vec, unsigned long int *len_enc_vec, unsigned char *data_enc)
+template <typename T>
+void encoding_wrap(int nx, int ny, int nz, T *fld_1d, int wtflag, int mx, int my, int mz, T *cutoffvec, T& tolabs, T& midval, T& halfspanval, unsigned char& wlev, unsigned char& nlay, unsigned long int& ntot_enc, T *deps_vec, T *minval_vec, unsigned long int *len_enc_vec, unsigned char *data_enc)
 {
     /* Wavelet decomposition */
-    // Print wavelet decomposition status
-    cout << "Wavelet decomposition..." << endl;
 
     // Total number of elements in the input array
     unsigned long int ntot = (unsigned long int)(nx)*(unsigned long int)(ny)*(unsigned long int)(nz);
@@ -241,8 +258,8 @@ extern "C" void encoding_wrap(int nx, int ny, int nz, double *fld_1d, int wtflag
     if (wtflag) wlev = WAV_LVL; else wlev = 0;
 
     // Find the minimum and maximum values
-    double minval = fld_1d[0];
-    double maxval = fld_1d[0];
+    T minval = fld_1d[0];
+    T maxval = fld_1d[0];
     for (unsigned long int j = 0; j < ntot; j++) 
       {
         minval = fmin(minval,fld_1d[j]);
@@ -266,11 +283,9 @@ extern "C" void encoding_wrap(int nx, int ny, int nz, double *fld_1d, int wtflag
       }
 
     // Apply wavelet transform
-    waveletcdf97_3d(nx,ny,nz,int(wlev),fld_1d);
+    waveletcdf97_3d<T>(nx,ny,nz,int(wlev),fld_1d);
 
     /* Range encoding */
-    // Print encoding statement
-    cout << "Range encoding..." << endl;
 
     // Alphabet size
     int q = 256;
@@ -289,7 +304,7 @@ extern "C" void encoding_wrap(int nx, int ny, int nz, double *fld_1d, int wtflag
     unsigned char ilay = 0;
 
     // Minimum cutoff
-    double tolrel = cutoffvec[0];
+    T tolrel = cutoffvec[0];
     for (unsigned int k=1; k<mtot; k++) if (cutoffvec[k] < tolrel) tolrel = cutoffvec[k];
 
     // Absolute tolerance
@@ -316,11 +331,9 @@ extern "C" void encoding_wrap(int nx, int ny, int nz, double *fld_1d, int wtflag
         // Store the minimum value
         minval_vec[ilay] = minval;
 
-        // Print min and max
-        cout << "min=" << minval << " max=" << maxval << endl;
 
         // Quantize for a q-letter alphabet
-        double deps = (maxval-minval)/(double)(q-1);
+        T deps = (maxval-minval)/(T)(q-1);
 
         // Impose the desired accuracy of the least significant bit plane
         if (deps < tolabs) 
@@ -336,8 +349,8 @@ extern "C" void encoding_wrap(int nx, int ny, int nz, double *fld_1d, int wtflag
         deps_vec[ilay] = deps;
 
         // Combinations of minval and deps, for optimization
-        double aopt = 1.0/deps;
-        double bopt = -minval*aopt+0.5;
+        T aopt = 1.0/deps;
+        T bopt = -minval*aopt+0.5;
 
         // Two branches depending on the local precision mask activated or not
         if (mtot > 1)
@@ -350,7 +363,7 @@ extern "C" void encoding_wrap(int nx, int ny, int nz, double *fld_1d, int wtflag
               ind_p2w_3d( wlev, nx, ny, nz, jp%nx, (jp/nx)%ny, jp/nx/ny, &l, &jwx, &jwy, &jwz);
 
               // Uniform cutoff by default
-              double precmask = tolabs;
+              T precmask = tolabs;
 
               // Load precision cutoff function in physical space, only applied on smallest detail coefficients
               if (l <= LOC_CUTOFF_LVL) 
@@ -372,7 +385,7 @@ extern "C" void encoding_wrap(int nx, int ny, int nz, double *fld_1d, int wtflag
               else 
                 { 
                   // Set to a value between 0 and 256 if the full range is greater than the local precision
-                  double fq = aopt * fld_1d[jw] + bopt; // fld_1d[jp]-minval is always >= 0
+                  T fq = aopt * fld_1d[jw] + bopt; // fld_1d[jp]-minval is always >= 0
                   fld_q[jw] = fq;
                 }
             }
@@ -384,14 +397,12 @@ extern "C" void encoding_wrap(int nx, int ny, int nz, double *fld_1d, int wtflag
           for(unsigned long int jp = 0; jp < ntot; jp++)
             {   
               // Set to a value between 0 and 256 if the full range is greater than the local precision
-              double fq = aopt * fld_1d[jp] + bopt; // fld_1d[jp]-minval is always >= 0
+              T fq = aopt * fld_1d[jp] + bopt; // fld_1d[jp]-minval is always >= 0
               fld_q[jp] = fq;
             }
           }   	 
     
         // The following only executes if all quantized data are non-zero
-        // Print the resolution for this layer
-        cout << "ilay=" << static_cast<unsigned>(ilay) << " deps=" << deps << endl;
 
         // Residual field
         for(unsigned long int j = 0; j < ntot; j++)
@@ -406,7 +417,6 @@ extern "C" void encoding_wrap(int nx, int ny, int nz, double *fld_1d, int wtflag
              if (fld1_q_tmp<iminval) iminval = fld1_q_tmp;
              if (fld1_q_tmp>imaxval) imaxval = fld1_q_tmp;
           }
-        cout << "imin=" << static_cast<unsigned>(iminval) << " imax=" << static_cast<unsigned>(imaxval) << " med=" << fld_q[ntot/2UL]*deps + minval << endl;
 
         // Encode
         range_encode(fld_q,ntot,enc_q,len_out_q);
@@ -426,8 +436,6 @@ extern "C" void encoding_wrap(int nx, int ny, int nz, double *fld_1d, int wtflag
               }
           }
 
-        // Print the encoded and original data set size
-        cout << "len_out_q=" << len_out_q << " ntot=" << ntot << endl;
 
         // Update layer index
         ilay ++;
@@ -452,8 +460,9 @@ extern "C" void encoding_wrap(int nx, int ny, int nz, double *fld_1d, int wtflag
 }
 
 
-/* Decoding subroutine with range decoding and inverse wavelet transform*/ 
-extern "C" void decoding_wrap(int nx, int ny, int nz, double *fld_1d, double& tolabs, double& midval, double& halfspanval, unsigned char& wlev, unsigned char& nlay, unsigned long int& ntot_enc, double *deps_vec, double *minval_vec, unsigned long int *len_enc_vec, unsigned char *data_enc)
+/* Decoding subroutine with range decoding and inverse wavelet transform*/
+template <typename T>
+void decoding_wrap(int nx, int ny, int nz, T *fld_1d, T& tolabs, T& midval, T& halfspanval, unsigned char& wlev, unsigned char& nlay, unsigned long int& ntot_enc, T *deps_vec, T *minval_vec, unsigned long int *len_enc_vec, unsigned char *data_enc)
 {
     // Total number of elements
     unsigned long int ntot = (unsigned long int)(nx)*(unsigned long int)(ny)*(unsigned long int)(nz);
@@ -469,8 +478,6 @@ extern "C" void decoding_wrap(int nx, int ny, int nz, double *fld_1d, double& to
       }
 
     /* Range decoding */
-    // Print decoding status
-    cout << "Range decoding..." << endl;
 
     // Allocate the quantized input and output vectors
     unsigned char *dec_q = new unsigned char[ntot];
@@ -485,12 +492,10 @@ extern "C" void decoding_wrap(int nx, int ny, int nz, double *fld_1d, double& to
     // Output the decoded output vector   
     for (unsigned char ilay = 0; ilay < nlay; ilay++)
     {
-        // Print layer index
-        cout << "ilay=" << static_cast<unsigned>(ilay) << endl;
 
         // Parameters for reconstruction
-        double deps = deps_vec[ilay];
-        double minval = minval_vec[ilay];
+        T deps = deps_vec[ilay];
+        T minval = minval_vec[ilay];
 
         // Get the encoded data
         unsigned long int len_out_q = len_enc_vec[ilay];
@@ -507,7 +512,6 @@ extern "C" void decoding_wrap(int nx, int ny, int nz, double *fld_1d, double& to
              if (dec_q[j]<iminval) iminval = dec_q[j];
              if (dec_q[j]>imaxval) imaxval = dec_q[j];
           }
-        cout << "imin=" << static_cast<unsigned>(iminval) << " imax=" << static_cast<unsigned>(imaxval) <<  " med=" << dec_q[ntot/2UL]*deps + minval << endl;
 
         // Cumulative field
         for(unsigned long int j = 0; j < ntot; j++)
@@ -515,8 +519,6 @@ extern "C" void decoding_wrap(int nx, int ny, int nz, double *fld_1d, double& to
     }
 
     /* Wavelet reconstruction */
-    // Print wavelet reconstruction status
-    cout << "Wavelet reconstruction..." << endl;
 
     // Inverse wavelet transform if the data is non-trivial
     waveletcdf97_3d(nx,ny,nz,-int(wlev),fld_1d);

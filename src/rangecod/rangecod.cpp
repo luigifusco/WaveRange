@@ -1,5 +1,5 @@
 /*
-    rangecod.c : This file is part of WaveRange CFD data compression utility
+    rangecod.cpp : This file is part of WaveRange CFD data compression utility
 
     Copyright (C) 2017  Dmitry Kolomenskiy
     Copyright (C) 2017  Ryo Onishi
@@ -31,7 +31,7 @@
     Modified from the rngcod13 coder (http://www.compressconsult.com/rangecoder/)
     Original header follows:
 
-    rangecod.c     range encoding
+    rangecod.cpp     range encoding
 
     (c) Michael Schindler
     1997, 1998, 1999, 2000
